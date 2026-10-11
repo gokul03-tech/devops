@@ -1,10 +1,10 @@
-location           = "Central India"
-prefix             = "peerlearn-demo-1234"
-vm_size            = "Standard_B2s"
-admin_username     = "azureuser"
-ssh_public_key_path = "/home/your-user/.ssh/peerlearn_azure.pub"
-allowed_ssh_cidr   = "203.0.113.10/32"
-enable_jenkins     = true
+location             = "Central India"
+prefix               = "peerlearn-demo-1234"
+vm_size              = "Standard_B2s"
+admin_username       = "azureuser"
+ssh_public_key_path  = "/home/your-user/.ssh/peerlearn_azure.pub"
+allowed_ssh_cidr     = "203.0.113.10/32"
+enable_jenkins       = true
 jenkins_allowed_cidrs = ["203.0.113.10/32"]
 tags = {
   course = "devops-assessment"
