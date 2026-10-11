@@ -2,6 +2,7 @@
 import os
 import re
 import secrets
+import sys
 from datetime import datetime, timedelta, timezone
 
 import jwt
@@ -9,6 +10,10 @@ from flask import Flask, g, jsonify, request
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash, generate_password_hash
+
+# Keep `python app.py` and Gunicorn's `app:app` on the same module identity.
+if __name__ == "__main__":
+    sys.modules.setdefault("app", sys.modules[__name__])
 
 db = SQLAlchemy()
 
