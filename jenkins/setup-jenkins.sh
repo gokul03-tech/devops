@@ -36,6 +36,6 @@ systemctl daemon-reload
 systemctl enable --now jenkins
 jenkins-plugin-cli --plugins git github workflow-aggregator ssh-agent credentials-binding ws-cleanup
 systemctl restart jenkins
-echo "Jenkins installed. Required plugins: Git, GitHub, Pipeline, SSH Agent, Credentials Binding."
+echo "Jenkins installed. Required plugins: Git, GitHub, Pipeline, SSH Agent, Credentials Binding, Workspace Cleanup."
 echo "Unlock key: sudo cat /var/lib/jenkins/secrets/initialAdminPassword"
-echo "Install plugins after completing the first-run wizard, then restart Jenkins if prompted."
+echo "Required plugins are preinstalled; complete the first-run wizard and restart if Jenkins prompts you."

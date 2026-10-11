@@ -11,14 +11,14 @@ export async function api(path, options = {}) {
   } catch {
     throw new Error('Could not reach PeerLearn. Check your connection and try again.')
   }
+  if (response.status === 204) return null
+  const body = await response.json().catch(() => ({}))
   if (response.status === 401) {
     localStorage.removeItem(TOKEN_KEY)
     localStorage.removeItem('peerlearn_user')
     if (window.location.pathname !== '/login') window.location.assign('/login')
-    throw new Error('Your session expired. Please sign in again.')
+    throw new Error(body.error || 'Your session expired. Please sign in again.')
   }
-  if (response.status === 204) return null
-  const body = await response.json().catch(() => ({}))
   if (!response.ok) throw new Error(body.error || `Request failed (${response.status}). Please try again.`)
   return body
 }

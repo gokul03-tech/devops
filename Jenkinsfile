@@ -90,7 +90,7 @@ pipeline {
                         ssh-keygen -F "$SSH_HOST" -f "$HOME/.ssh/known_hosts" >/dev/null
                         SSH_OPTS="-o StrictHostKeyChecking=yes -o UserKnownHostsFile=$HOME/.ssh/known_hosts"
                         scp $SSH_OPTS peerlearn-release.tar.gz "$REMOTE:$REMOTE_ARCHIVE"
-                        ssh $SSH_OPTS "$REMOTE" "mkdir -p '$REMOTE_DIR' && tar -xzf '$REMOTE_ARCHIVE' -C '$REMOTE_DIR' && sudo bash '$REMOTE_DIR/deploy/deploy.sh' '$REMOTE_DIR'"
+                        ssh $SSH_OPTS "$REMOTE" "mkdir -p '$REMOTE_DIR' && tar -xzf '$REMOTE_ARCHIVE' -C '$REMOTE_DIR' && sudo bash '$REMOTE_DIR/deploy/deploy.sh' '$REMOTE_DIR' && rm -rf '$REMOTE_DIR' '$REMOTE_ARCHIVE'"
                     '''
                 }
             }
@@ -121,7 +121,7 @@ pipeline {
     }
 
     post {
-        success { echo 'PeerLearn CI/CD succeeded: tests passed and the main-branch deployment is healthy.' }
+        success { echo 'PeerLearn pipeline stages completed successfully.' }
         failure { echo 'PeerLearn CI/CD failed. Review the stage logs before retrying.' }
         always { cleanWs() }
     }

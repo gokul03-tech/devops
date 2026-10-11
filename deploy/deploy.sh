@@ -27,6 +27,9 @@ RELEASE_DIR="$(cd "$INPUT" && pwd)"
 for required in "$RELEASE_DIR/backend/app.py" "$RELEASE_DIR/backend/requirements.txt" "$RELEASE_DIR/frontend/dist/index.html"; do
   if [[ ! -f "$required" ]]; then echo "Missing release file: $required" >&2; exit 1; fi
 done
+if [[ -f "$RELEASE_DIR/deploy/rollback.sh" ]]; then
+  install -m 0750 -o root -g root "$RELEASE_DIR/deploy/rollback.sh" /usr/local/sbin/peerlearn-rollback
+fi
 install -d -o peerlearn -g peerlearn "$APP_ROOT/backend" "$RELEASES" /var/lib/peerlearn
 install -d -o www-data -g www-data /var/www/peerlearn
 if [[ ! -x "$VENV/bin/python" ]]; then python3 -m venv "$VENV"; fi

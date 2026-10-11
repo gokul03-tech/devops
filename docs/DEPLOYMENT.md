@@ -102,7 +102,7 @@ Expected JSON:
 Open `http://<VM_IP>` in a browser and register an account. The Jenkins deploy step stores the previous backend and static frontend files under `/opt/peerlearn/releases/`; `/var/lib/peerlearn/peerlearn.db` stays out of each code deployment. To restore the newest saved app code on the VM:
 
 ```bash
-sudo bash /path/to/repository/deploy/rollback.sh
+sudo peerlearn-rollback
 ```
 
 ## 7. Demonstrate continuous deployment

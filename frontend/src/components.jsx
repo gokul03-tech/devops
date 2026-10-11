@@ -3,8 +3,8 @@ import { TOKEN_KEY } from './api/client'
 import { useAuth } from './AuthContext'
 
 export function ProtectedRoute() { return localStorage.getItem(TOKEN_KEY) ? <Outlet /> : <Navigate to="/login" replace /> }
-export function Button({ children, variant = 'primary', className = '', ...props }) { return <button className={`button ${variant} ${className}`} {...props}>{children}</button> }
-export function Card({ children, className = '' }) { return <section className={`panel ${className}`}>{children}</section> }
+export function Button({ children, variant = 'primary', className = '', ...props }) { return <button className={`button ${variant} ${className} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 disabled:cursor-not-allowed disabled:opacity-60`} {...props}>{children}</button> }
+export function Card({ children, className = '' }) { return <section className={`panel transition-shadow duration-200 hover:shadow-sm ${className}`}>{children}</section> }
 export function Badge({ children, status, className = '' }) {
   const tone = status ? `status-${String(status).toLowerCase()}` : ''
   return <span className={`badge ${tone} ${className}`.trim()}>{children}</span>
