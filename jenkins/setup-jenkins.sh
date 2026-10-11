@@ -5,7 +5,7 @@ if [[ "${EUID}" -ne 0 ]]; then echo "Run with sudo: sudo bash setup-jenkins.sh" 
 
 export DEBIAN_FRONTEND=noninteractive
 apt-get update
-apt-get install -y ca-certificates curl fontconfig git python3 python3-venv python3-pip gnupg wget
+apt-get install -y ca-certificates curl fontconfig git python3 python3-venv python3-pip gnupg wget openjdk-17-jre-headless
 install -d -m 0755 /etc/apt/keyrings
 wget -qO- https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor --yes -o /etc/apt/keyrings/adoptium.gpg
 echo "deb [signed-by=/etc/apt/keyrings/adoptium.gpg] https://packages.adoptium.net/artifactory/deb $(. /etc/os-release && echo "$VERSION_CODENAME") main" > /etc/apt/sources.list.d/adoptium.list
@@ -25,8 +25,16 @@ if ! node --version 2>/dev/null | grep -q '^v20\.'; then
   apt-get install -y nodejs
 fi
 
+# Recent Jenkins LTS releases need Java 21 to run; Java 17 remains installed for build tools.
+install -d -m 0755 /etc/systemd/system/jenkins.service.d
+cat > /etc/systemd/system/jenkins.service.d/java.conf <<'EOF'
+[Service]
+Environment="JAVA_HOME=/usr/lib/jvm/temurin-21-jre-amd64"
+Environment="JENKINS_JAVA_CMD=/usr/lib/jvm/temurin-21-jre-amd64/bin/java"
+EOF
+systemctl daemon-reload
 systemctl enable --now jenkins
-jenkins-plugin-cli --plugins git github workflow-aggregator ssh-agent credentials-binding
+jenkins-plugin-cli --plugins git github workflow-aggregator ssh-agent credentials-binding ws-cleanup
 systemctl restart jenkins
 echo "Jenkins installed. Required plugins: Git, GitHub, Pipeline, SSH Agent, Credentials Binding."
 echo "Unlock key: sudo cat /var/lib/jenkins/secrets/initialAdminPassword"
