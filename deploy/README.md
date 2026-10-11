@@ -10,7 +10,7 @@ tar -xzf /tmp/peerlearn-release.tar.gz -C /tmp/peerlearn-release
 sudo bash /tmp/peerlearn-release/deploy/deploy.sh /tmp/peerlearn-release
 ```
 
-The deployment script also accepts the `.tar.gz` path directly. It snapshots the current backend and frontend build under `/opt/peerlearn/releases/`, keeps the SQLite file in `/var/lib/peerlearn/`, restarts Gunicorn, reloads Nginx, and checks `/api/health`. To restore the newest saved code snapshot:
+The deployment script also accepts the `.tar.gz` path directly. It snapshots the current backend and frontend build under `/opt/peerlearn/releases/`, keeps the SQLite file in `/var/lib/peerlearn/`, restarts the three-worker Gunicorn service bound to `127.0.0.1:8000`, reloads Nginx, and checks `/api/health`. To restore the newest saved code snapshot:
 
 ```bash
 sudo bash deploy/rollback.sh
