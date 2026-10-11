@@ -11,6 +11,10 @@ dist/
 .env
 *.tfstate
 *.tfstate.backup
+*.tfstate*
 *.tfplan
 *.tfvars
 terraform/.terraform/
+**/.terraform/
+crash.log
+crash.*.log
