@@ -1,5 +1,6 @@
 """PeerLearn Flask API application factory."""
 import os
+import secrets
 from datetime import datetime, timedelta, timezone
 
 import jwt
@@ -95,7 +96,7 @@ def create_app(test_config=None):
         database_path = os.environ.get("DATABASE_PATH", "peerlearn.db")
         database_url = "sqlite:///" + database_path
     app.config.update(
-        SECRET_KEY=os.environ.get("JWT_SECRET", "development-only-change-me"),
+        SECRET_KEY=os.environ.get("JWT_SECRET") or secrets.token_hex(32),
         SQLALCHEMY_DATABASE_URI=database_url,
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         JWT_EXPIRES_HOURS=24,

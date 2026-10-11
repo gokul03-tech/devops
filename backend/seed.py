@@ -1,4 +1,5 @@
-"""Create a small, repeatable demonstration dataset (password: learn123)."""
+"""Create a small, repeatable demonstration dataset with a generated password."""
+import secrets
 from werkzeug.security import generate_password_hash
 
 from app import Skill, User, UserSkill, create_app, db
@@ -15,6 +16,7 @@ DEMO_USERS = [
 
 def seed():
     app = create_app()
+    demo_password = secrets.token_urlsafe(12)
     with app.app_context():
         db.create_all()
         skills = {}
@@ -28,7 +30,7 @@ def seed():
         for name, email, department, year, interests in DEMO_USERS:
             user = User.query.filter_by(email=email).first()
             if not user:
-                user = User(name=name, email=email, password_hash=generate_password_hash("learn123"), department=department, year=year, availability="Weekday evenings,Weekends")
+                user = User(name=name, email=email, password_hash=generate_password_hash(demo_password), department=department, year=year, availability="Weekday evenings,Weekends")
                 db.session.add(user)
                 db.session.flush()
             for kind, names in interests.items():
@@ -41,4 +43,4 @@ def seed():
 
 if __name__ == "__main__":
     seed()
-    print("Seeded PeerLearn demo data. Demo password: learn123")
+    print(f"Seeded PeerLearn demo data. Generated demo password for all demo users: {demo_password}")
