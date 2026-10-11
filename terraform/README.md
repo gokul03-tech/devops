@@ -22,7 +22,7 @@ terraform apply peerlearn.tfplan
 terraform output
 ```
 
-The outputs include the app URL, Jenkins URL, public IP, and SSH command. The DNS label is optional and Azure requires it to be globally unique. If Terraform reports that the label is already taken, change or clear `dns_label` and apply again.
+The outputs include the app URL, Jenkins URL, public IP, and SSH command. The NSG exposes port 8080 only to `allowed_jenkins_cidr`; keep that CIDR narrow, and account for GitHub webhook traffic if GitHub will call this Jenkins instance. The DNS label is optional and Azure requires it to be globally unique. If Terraform reports that the label is already taken, change or clear `dns_label` and apply again.
 
 ## Remote state (optional)
 
