@@ -2,6 +2,7 @@ import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { Layout, ProtectedRoute } from './components'
+import { AuthProvider } from './AuthContext'
 import { AuthPage, Dashboard, History, Partners, Profile, Sessions } from './pages'
 import './styles.css'
 
@@ -18,4 +19,4 @@ function App() {
   </Routes></BrowserRouter>
 }
 
-createRoot(document.getElementById('root')).render(<React.StrictMode><App /></React.StrictMode>)
+createRoot(document.getElementById('root')).render(<React.StrictMode><AuthProvider><App /></AuthProvider></React.StrictMode>)
