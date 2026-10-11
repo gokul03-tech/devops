@@ -11,5 +11,6 @@ dist/
 .env
 *.tfstate
 *.tfstate.backup
+*.tfplan
+*.tfvars
 terraform/.terraform/
-terraform/terraform.tfvars

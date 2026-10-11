@@ -42,9 +42,13 @@ variable "enable_jenkins" {
   default     = true
 }
 
-variable "jenkins_allowed_cidr" {
-  description = "CIDR allowed to reach Jenkins port 8080."
-  type        = string
+variable "jenkins_allowed_cidrs" {
+  description = "CIDR blocks allowed to reach Jenkins port 8080 (include GitHub webhook source ranges)."
+  type        = list(string)
+  validation {
+    condition     = length(var.jenkins_allowed_cidrs) > 0 && length(distinct(var.jenkins_allowed_cidrs)) == length(var.jenkins_allowed_cidrs) && alltrue([for cidr in var.jenkins_allowed_cidrs : can(cidrnetmask(cidr))])
+    error_message = "jenkins_allowed_cidrs must contain unique, valid CIDR blocks."
+  }
 }
 
 variable "tags" {

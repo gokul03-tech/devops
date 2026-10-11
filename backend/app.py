@@ -1,5 +1,6 @@
 """PeerLearn Flask API application factory."""
 import os
+import re
 import secrets
 from datetime import datetime, timedelta, timezone
 
@@ -13,6 +14,7 @@ db = SQLAlchemy()
 
 
 class User(db.Model):
+    __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
@@ -24,6 +26,7 @@ class User(db.Model):
 
 
 class Skill(db.Model):
+    __tablename__ = "skills"
     id = db.Column(db.Integer, primary_key=True)
     skill_name = db.Column(db.String(120), unique=True, nullable=False, index=True)
     category = db.Column(db.String(120), nullable=False, default="General")
@@ -32,8 +35,8 @@ class Skill(db.Model):
 
 class UserSkill(db.Model):
     __tablename__ = "user_skills"
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
-    skill_id = db.Column(db.Integer, db.ForeignKey("skill.id"), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), primary_key=True)
+    skill_id = db.Column(db.Integer, db.ForeignKey("skills.id"), primary_key=True)
     skill_type = db.Column(db.String(8), primary_key=True)
     user = db.relationship("User", back_populates="skills")
     skill = db.relationship("Skill", back_populates="users")
@@ -43,9 +46,9 @@ class UserSkill(db.Model):
 class SessionRequest(db.Model):
     __tablename__ = "session_requests"
     id = db.Column(db.Integer, primary_key=True)
-    requester_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    partner_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    skill_id = db.Column(db.Integer, db.ForeignKey("skill.id"), nullable=False)
+    requester_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    partner_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    skill_id = db.Column(db.Integer, db.ForeignKey("skills.id"), nullable=False)
     proposed_time = db.Column(db.String(80), nullable=False)
     meeting_link = db.Column(db.String(500))
     status = db.Column(db.String(12), nullable=False, default="Pending")
@@ -61,7 +64,7 @@ class SessionRequest(db.Model):
 class Review(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     session_id = db.Column(db.Integer, db.ForeignKey("session_requests.id"), nullable=False)
-    reviewer_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    reviewer_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     rating = db.Column(db.Integer, nullable=False)
     feedback = db.Column(db.Text, nullable=False, default="")
     session = db.relationship("SessionRequest", back_populates="reviews")
@@ -118,7 +121,7 @@ def create_app(test_config=None):
             g.user = db.session.get(User, int(payload.get("sub")))
             if not g.user:
                 return _json_error("Invalid token", 401)
-        except (jwt.InvalidTokenError, TypeError):
+        except (jwt.InvalidTokenError, TypeError, ValueError):
             return _json_error("Invalid token", 401)
 
     def token_for(user):
@@ -131,8 +134,11 @@ def create_app(test_config=None):
     @app.post("/api/auth/register")
     def register():
         data = request.get_json(silent=True) or {}
-        name, email, password = data.get("name", "").strip(), data.get("email", "").strip().lower(), data.get("password", "")
-        if not name or len(name) > 120 or "@" not in email or len(password) < 8:
+        raw_name, raw_email, password = data.get("name", ""), data.get("email", ""), data.get("password", "")
+        if not isinstance(raw_name, str) or not isinstance(raw_email, str) or not isinstance(password, str):
+            return _json_error("name, email and password must be strings")
+        name, email = raw_name.strip(), raw_email.strip().lower()
+        if not name or len(name) > 120 or not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email) or len(password) < 8:
             return _json_error("name, valid email and password (at least 8 characters) are required")
         if User.query.filter_by(email=email).first():
             return _json_error("email is already registered", 409)
@@ -145,8 +151,11 @@ def create_app(test_config=None):
     @app.post("/api/auth/login")
     def login():
         data = request.get_json(silent=True) or {}
-        user = User.query.filter_by(email=str(data.get("email", "")).strip().lower()).first()
-        if not user or not check_password_hash(user.password_hash, data.get("password", "")):
+        email, password = data.get("email", ""), data.get("password", "")
+        if not isinstance(email, str) or not isinstance(password, str):
+            return _json_error("invalid email or password", 401)
+        user = User.query.filter_by(email=email.strip().lower()).first()
+        if not user or not check_password_hash(user.password_hash, password):
             return _json_error("invalid email or password", 401)
         return jsonify(token=token_for(user), user=_user_json(user))
 
@@ -255,7 +264,7 @@ def create_app(test_config=None):
         action = data.get("action")
         transitions = {"accept": ("Pending", "Accepted", session.partner_id), "reject": ("Pending", "Rejected", session.partner_id),
                        "cancel": (("Pending", "Accepted"), "Cancelled", None), "complete": ("Accepted", "Completed", None)}
-        if action not in transitions:
+        if not isinstance(action, str) or action not in transitions:
             return _json_error("action must be accept, reject, cancel or complete")
         required, target, actor = transitions[action]
         if actor and actor != g.user.id:
@@ -327,4 +336,4 @@ app = create_app()
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
-    app.run(port=5000, debug=True)
+    app.run(port=int(os.environ.get("PORT", "5000")), debug=os.environ.get("FLASK_DEBUG") == "1")

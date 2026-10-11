@@ -67,10 +67,10 @@ resource "azurerm_network_security_group" "peerlearn" {
     destination_address_prefix = "*"
   }
   dynamic "security_rule" {
-    for_each = var.enable_jenkins ? [var.jenkins_allowed_cidr] : []
+    for_each = var.enable_jenkins ? var.jenkins_allowed_cidrs : []
     content {
-      name                       = "allow-jenkins-restricted"
-      priority                   = 130
+      name                       = format("allow-jenkins-%03d", 130 + index(var.jenkins_allowed_cidrs, security_rule.value))
+      priority                   = 130 + index(var.jenkins_allowed_cidrs, security_rule.value)
       direction                  = "Inbound"
       access                     = "Allow"
       protocol                   = "Tcp"

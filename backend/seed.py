@@ -27,9 +27,11 @@ def seed():
                 db.session.add(skill)
             skills[name] = skill
         db.session.flush()
+        created_users = False
         for name, email, department, year, interests in DEMO_USERS:
             user = User.query.filter_by(email=email).first()
             if not user:
+                created_users = True
                 user = User(name=name, email=email, password_hash=generate_password_hash(demo_password), department=department, year=year, availability="Weekday evenings,Weekends")
                 db.session.add(user)
                 db.session.flush()
@@ -43,4 +45,7 @@ def seed():
 
 if __name__ == "__main__":
     seed()
-    print(f"Seeded PeerLearn demo data. Generated demo password for all demo users: {demo_password}")
+    if created_users:
+        print(f"Seeded PeerLearn demo data. Generated password for newly created demo users: {demo_password}")
+    else:
+        print("Demo users already exist; their passwords were left unchanged.")

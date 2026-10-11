@@ -12,12 +12,6 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '10'))
     }
 
-    parameters {
-        string(name: 'VM_IP', defaultValue: '', description: 'Azure VM public IPv4 address (set in the job before deploying)')
-        string(name: 'VM_HOST', defaultValue: '', description: 'SSH target (use 127.0.0.1 when Jenkins shares the app VM)')
-        string(name: 'VM_USER', defaultValue: '', description: 'SSH login configured in Terraform')
-    }
-
     stages {
         stage('Checkout') {
             steps { checkout scm }
@@ -52,10 +46,10 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    if (!params.VM_IP?.trim() || !params.VM_HOST?.trim() || !params.VM_USER?.trim()) {
-                        error('Set VM_IP, VM_HOST and VM_USER on this Jenkins job before deployment.')
+                    if (!env.VM_IP?.trim() || !env.VM_HOST?.trim() || !env.VM_USER?.trim()) {
+                        error('Set VM_IP, VM_HOST and VM_USER in Jenkins global or job environment properties before deployment.')
                     }
-                    if (!(params.VM_IP ==~ /^[0-9.]+$/) || !(params.VM_HOST ==~ /^[A-Za-z0-9.-]+$/) || !(params.VM_USER ==~ /^[A-Za-z_][A-Za-z0-9_-]*$/)) {
+                    if (!(env.VM_IP ==~ /^[0-9.]+$/) || !(env.VM_HOST ==~ /^[A-Za-z0-9.-]+$/) || !(env.VM_USER ==~ /^[A-Za-z_][A-Za-z0-9_-]*$/)) {
                         error('VM_IP must be IPv4, VM_HOST must be a host name or IP, and VM_USER must be a valid Linux login name.')
                     }
                 }
