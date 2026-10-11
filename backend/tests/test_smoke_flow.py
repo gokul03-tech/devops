@@ -15,6 +15,7 @@ def test_register_match_session_review_smoke(client, register, auth):
 
     matches = client.get("/api/matches?skill=Integration%20Test%20Skill", headers=learner_headers).get_json()["matches"]
     assert [candidate["id"] for candidate in matches] == [tutor["user"]["id"]]
+    assert matches[0]["match_type"] == "Mutual Exchange"
 
     session = client.post("/api/sessions", headers=learner_headers,
                           json={"partner_id": tutor["user"]["id"], "skill_id": skill.get_json()["skill"]["id"],
@@ -27,4 +28,7 @@ def test_register_match_session_review_smoke(client, register, auth):
                         json={"action": "complete"}).get_json()["session"]["status"] == "Completed"
     assert client.post(f"/api/sessions/{session_id}/review", headers=learner_headers,
                        json={"rating": 5, "feedback": "Clear and useful session."}).status_code == 201
+    history = client.get("/api/history", headers=learner_headers).get_json()["history"]
+    assert history[0]["session"]["id"] == session_id
+    assert history[0]["reviews"][0]["rating"] == 5
     assert client.get("/api/health").get_json() == {"status": "ok"}
