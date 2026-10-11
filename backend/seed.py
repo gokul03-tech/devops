@@ -41,11 +41,12 @@ def seed():
                     if not db.session.get(UserSkill, key):
                         db.session.add(UserSkill(user_id=user.id, skill_id=skills[skill_name].id, skill_type=kind))
         db.session.commit()
+    return (demo_password if created_users else None)
 
 
 if __name__ == "__main__":
-    seed()
-    if created_users:
-        print(f"Seeded PeerLearn demo data. Generated password for newly created demo users: {demo_password}")
+    generated_password = seed()
+    if generated_password:
+        print(f"Seeded PeerLearn demo data. Generated password for newly created demo users: {generated_password}")
     else:
         print("Demo users already exist; their passwords were left unchanged.")

@@ -104,7 +104,7 @@ def create_app(test_config=None):
         database_path = os.environ.get("DATABASE_PATH", "peerlearn.db")
         database_url = "sqlite:///" + database_path
     app.config.update(
-        SECRET_KEY=os.environ.get("JWT_SECRET") or secrets.token_hex(32),
+        SECRET_KEY=os.environ.get("SECRET_KEY") or os.environ.get("JWT_SECRET") or secrets.token_hex(32),
         SQLALCHEMY_DATABASE_URI=database_url,
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         JWT_EXPIRES_HOURS=24,
