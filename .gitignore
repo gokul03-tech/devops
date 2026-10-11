@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+venv/
+.venv/
+node_modules/
+dist/
+*.db
+.env
+*.tfstate
+*.tfstate.backup
+terraform/.terraform/
+terraform/terraform.tfvars
