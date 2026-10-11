@@ -15,6 +15,10 @@ echo "Installing backend requirements..."
 "$VENV/bin/pip" install -r "$BACKEND/requirements.txt"
 echo "Seeding demonstration users (password printed only when first created)..."
 (cd "$BACKEND" && "$VENV/bin/python" seed.py)
+if [[ ! -x "$ROOT/frontend/node_modules/.bin/vite" ]]; then
+  echo "Installing frontend dependencies..."
+  (cd "$ROOT/frontend" && npm ci)
+fi
 
 (
   cd "$BACKEND"

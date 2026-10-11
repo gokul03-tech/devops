@@ -36,18 +36,22 @@ variable "allowed_ssh_cidr" {
   }
 }
 
-variable "enable_jenkins" {
-  description = "Allow inbound TCP 8080 for the same-VM Jenkins installation. Restrict at the source when possible."
-  type        = bool
-  default     = true
+variable "allowed_jenkins_cidr" {
+  description = "IPv4 CIDR allowed to reach Jenkins port 8080, for example 203.0.113.10/32."
+  type        = string
+  validation {
+    condition     = can(cidrnetmask(var.allowed_jenkins_cidr))
+    error_message = "allowed_jenkins_cidr must be a valid CIDR block."
+  }
 }
 
-variable "jenkins_allowed_cidrs" {
-  description = "CIDR blocks allowed to reach Jenkins port 8080 (include GitHub webhook source ranges)."
-  type        = list(string)
+variable "dns_label" {
+  description = "Optional globally unique Azure DNS label for the public IP."
+  type        = string
+  default     = ""
   validation {
-    condition     = length(var.jenkins_allowed_cidrs) > 0 && length(distinct(var.jenkins_allowed_cidrs)) == length(var.jenkins_allowed_cidrs) && alltrue([for cidr in var.jenkins_allowed_cidrs : can(cidrnetmask(cidr))])
-    error_message = "jenkins_allowed_cidrs must contain unique, valid CIDR blocks."
+    condition     = var.dns_label == "" || can(regex("^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$", var.dns_label))
+    error_message = "dns_label must contain lowercase letters, digits, or internal hyphens."
   }
 }
 

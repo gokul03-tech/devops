@@ -19,7 +19,7 @@ install -d -o peerlearn -g peerlearn /opt/peerlearn/backend /var/lib/peerlearn
 install -d -o www-data -g www-data /var/www/peerlearn
 if [[ ! -f /etc/peerlearn.env ]]; then
   install -m 0600 -o root -g root /dev/null /etc/peerlearn.env
-  printf 'JWT_SECRET=%s\nDATABASE_PATH=/var/lib/peerlearn/peerlearn.db\n' "$(openssl rand -hex 32)" > /etc/peerlearn.env
+  printf 'SECRET_KEY=%s\nDATABASE_PATH=/var/lib/peerlearn/peerlearn.db\n' "$(openssl rand -hex 32)" > /etc/peerlearn.env
 fi
 install -m 0644 "$(dirname "$0")/peerlearn.service" /etc/systemd/system/peerlearn.service
 install -m 0644 "$(dirname "$0")/nginx.conf" /etc/nginx/sites-available/peerlearn

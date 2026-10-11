@@ -10,7 +10,12 @@ output "ssh_command" {
 
 output "app_url" {
   description = "PeerLearn web application URL."
-  value       = "http://${azurerm_public_ip.peerlearn.ip_address}"
+  value       = "http://${coalesce(azurerm_public_ip.peerlearn.fqdn, azurerm_public_ip.peerlearn.ip_address)}"
+}
+
+output "jenkins_url" {
+  description = "Jenkins URL (accessible only from allowed_jenkins_cidr)."
+  value       = "http://${azurerm_public_ip.peerlearn.ip_address}:8080"
 }
 
 output "resource_group_name" {

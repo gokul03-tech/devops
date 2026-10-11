@@ -6,12 +6,14 @@ locals {
   address_space = "10.20.0.0/16"
 }
 
+# Holds all PeerLearn resources in one Azure lifecycle boundary.
 resource "azurerm_resource_group" "peerlearn" {
   name     = "${var.prefix}-rg"
   location = var.location
   tags     = local.common_tags
 }
 
+# Provides the private address space for the VM.
 resource "azurerm_virtual_network" "peerlearn" {
   name                = "${var.prefix}-vnet"
   address_space       = [local.address_space]
@@ -20,6 +22,7 @@ resource "azurerm_virtual_network" "peerlearn" {
   tags                = local.common_tags
 }
 
+# Isolates the VM network interface inside the virtual network.
 resource "azurerm_subnet" "peerlearn" {
   name                 = "${var.prefix}-subnet"
   resource_group_name  = azurerm_resource_group.peerlearn.name
@@ -27,6 +30,7 @@ resource "azurerm_subnet" "peerlearn" {
   address_prefixes     = ["10.20.1.0/24"]
 }
 
+# Allows SSH from the administrator CIDR, web traffic, and restricted Jenkins access.
 resource "azurerm_network_security_group" "peerlearn" {
   name                = "${var.prefix}-nsg"
   location            = azurerm_resource_group.peerlearn.location
@@ -66,31 +70,31 @@ resource "azurerm_network_security_group" "peerlearn" {
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
-  dynamic "security_rule" {
-    for_each = var.enable_jenkins ? var.jenkins_allowed_cidrs : []
-    content {
-      name                       = format("allow-jenkins-%03d", 130 + index(var.jenkins_allowed_cidrs, security_rule.value))
-      priority                   = 130 + index(var.jenkins_allowed_cidrs, security_rule.value)
-      direction                  = "Inbound"
-      access                     = "Allow"
-      protocol                   = "Tcp"
-      source_port_range          = "*"
-      destination_port_range     = "8080"
-      source_address_prefix      = security_rule.value
-      destination_address_prefix = "*"
-    }
+  security_rule {
+    name                       = "allow-jenkins-restricted"
+    priority                   = 130
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "8080"
+    source_address_prefix      = var.allowed_jenkins_cidr
+    destination_address_prefix = "*"
   }
 }
 
+# Gives the VM a stable public IPv4 address and optional DNS label.
 resource "azurerm_public_ip" "peerlearn" {
   name                = "${var.prefix}-public-ip"
   location            = azurerm_resource_group.peerlearn.location
   resource_group_name = azurerm_resource_group.peerlearn.name
   allocation_method   = "Static"
   sku                 = "Standard"
+  domain_name_label   = var.dns_label == "" ? null : var.dns_label
   tags                = local.common_tags
 }
 
+# Connects the VM subnet and static public IP to the virtual machine.
 resource "azurerm_network_interface" "peerlearn" {
   name                = "${var.prefix}-nic"
   location            = azurerm_resource_group.peerlearn.location
@@ -105,11 +109,13 @@ resource "azurerm_network_interface" "peerlearn" {
   }
 }
 
+# Applies the inbound rules to the VM network interface.
 resource "azurerm_network_interface_security_group_association" "peerlearn" {
   network_interface_id      = azurerm_network_interface.peerlearn.id
   network_security_group_id = azurerm_network_security_group.peerlearn.id
 }
 
+# Runs the Ubuntu 22.04 host with SSH-key authentication and cloud-init bootstrap.
 resource "azurerm_linux_virtual_machine" "peerlearn" {
   name                            = "${var.prefix}-vm"
   computer_name                   = "peerlearn"
