@@ -12,6 +12,8 @@ def test_register_match_session_review_smoke(client, register, auth):
     assert skill.status_code == 201
     assert client.post("/api/profile/skills", headers=learner_headers,
                        json={"skill_name": "Linux", "skill_type": "teach"}).status_code == 201
+    assert client.post("/api/profile/skills", headers=tutor_headers,
+                       json={"skill_name": "Linux", "skill_type": "learn"}).status_code == 201
 
     matches = client.get("/api/matches?skill=Integration%20Test%20Skill", headers=learner_headers).get_json()["matches"]
     assert [candidate["id"] for candidate in matches] == [tutor["user"]["id"]]
