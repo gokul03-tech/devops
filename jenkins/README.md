@@ -33,7 +33,7 @@ Required plugins:
 1. Select **New Item**, enter a job name, choose **Pipeline**, and save.
 2. In **General**, enable **GitHub project** and provide the repository URL if desired.
 3. In **Pipeline**, choose **Pipeline script from SCM**, choose **Git**, set the repository URL and repository credentials if private, set **Branch Specifier** to `*/main`, and set **Script Path** to `Jenkinsfile`.
-4. Save. Build parameters `VM_HOST` (public VM IP or DNS), `VM_USER` (SSH username), and optional `VM_SSH_HOST` (SSH override) are declared by the Jenkinsfile; set values when running the job or configure them as job parameters.
+4. Save. Build parameters `VM_HOST` (public VM IP or DNS), `VM_USER` (SSH username), and optional `VM_SSH_HOST` (SSH override) are declared by the Jenkinsfile; set values when running the job or configure them as job parameters. When Jenkins and PeerLearn share one VM, use `VM_SSH_HOST=127.0.0.1` to avoid public-IP hairpin routing; `VM_HOST` remains the public address used by the health check.
 5. Run **Build Now** once to check out, test, package, deploy, and verify the application.
 
 The pipeline also polls SCM every two minutes as a fallback. Deploy and Verify stages run only for `main`; other branches still build, test, and archive the release. On the first deploy, the pipeline captures the VM SSH host key into its own `known_hosts` file using `ssh-keyscan`, then enforces `StrictHostKeyChecking=yes` for transfer and deployment.
