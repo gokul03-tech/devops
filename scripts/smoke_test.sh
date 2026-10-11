@@ -4,6 +4,7 @@ set -euo pipefail
 
 BASE_URL="${BASE_URL:-http://127.0.0.1:5000}"
 STAMP="$(date +%s)"
+SKILL_NAME="SmokeTest${STAMP}"
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
 
@@ -30,10 +31,10 @@ LEARNER_TOKEN="$(printf '%s' "$first" | json_value token)"
 TUTOR_TOKEN="$(printf '%s' "$second" | json_value token)"
 TUTOR_ID="$(printf '%s' "$second" | json_value user.id)"
 LEARNER_ID="$(printf '%s' "$first" | json_value user.id)"
-SKILL="$(post_json /api/profile/skills '{"skill_name":"Smoke Testing","skill_type":"teach"}' "$TUTOR_TOKEN")"
+SKILL="$(post_json /api/profile/skills "{\"skill_name\":\"$SKILL_NAME\",\"skill_type\":\"teach\"}" "$TUTOR_TOKEN")"
 SKILL_ID="$(printf '%s' "$SKILL" | json_value skill.id)"
 post_json /api/profile/skills '{"skill_name":"Linux","skill_type":"teach"}' "$LEARNER_TOKEN" >/dev/null
-matches="$(curl --fail --silent --show-error -H "Authorization: Bearer $LEARNER_TOKEN" "$BASE_URL/api/matches?skill=Smoke%20Testing")"
+matches="$(curl --fail --silent --show-error -H "Authorization: Bearer $LEARNER_TOKEN" "$BASE_URL/api/matches?skill=$SKILL_NAME")"
 MATCH_ID="$(printf '%s' "$matches" | json_value matches.0.id)"
 [[ "$MATCH_ID" == "$TUTOR_ID" ]]
 session="$(post_json /api/sessions "{\"partner_id\":$TUTOR_ID,\"skill_id\":$SKILL_ID,\"proposed_time\":\"Tomorrow at 4pm\"}" "$LEARNER_TOKEN")"
