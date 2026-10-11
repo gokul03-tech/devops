@@ -84,7 +84,8 @@ def _availability(value):
 def _user_json(user):
     return {"id": user.id, "name": user.name, "email": user.email,
             "department": user.department, "year": user.year,
-            "availability": [s for s in user.availability.split(",") if s]}
+            "availability": [s for s in user.availability.split(",") if s],
+            "skills": [{"id": row.skill_id, "skill_name": row.skill.skill_name, "skill_type": row.skill_type} for row in user.skills]}
 
 
 def create_app(test_config=None):
